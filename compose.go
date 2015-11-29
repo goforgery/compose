@@ -27,7 +27,6 @@ func (this *BufferedResponseWriter) Write(b []byte) (int, error) {
 		this.Buffer = &bytes.Buffer{}
 	}
 	len, err := this.Buffer.Write(b)
-	// fmt.Println(string(this.Buffer.Bytes()))
 	return len, err
 }
 
@@ -36,32 +35,27 @@ func (this *BufferedResponseWriter) WriteHeader(code int) {
 	this.Status = code
 }
 
-/*
-   c := compose.Map{
-       "header": func(req, res, next) {
-           res.Send("Header string")
-       },
-       "body": func(req, res, next) {
-           res.Render("page.html", "Body string")
-       },
-       "footer": func(req, res, next) {
-           res.End("Footer string")
-       },
-       "tail": func(req, res, next) {
-           res.Write("Tail string")
-       },
-       "close": func(req, res, next) {
-           res.WriteBytes([]byte("Close string"))
-       },
-   }
-
-   data := c.Execute(req, res, next)
-*/
+// c := compose.Map{
+//     "header": func(req *f.Request, res *f.Response, next func()) {
+//         res.Send("Header string")
+//     },
+//     "body": func(req *f.Request, res *f.Response, next func()) {
+//         res.Render("body.html", "Title")
+//     },
+//     "footer": func(req *f.Request, res *f.Response, next func()) {
+//         res.End("Footer string")
+//     },
+//     "tail": func(req *f.Request, res *f.Response, next func()) {
+//         res.Write("Tail string")
+//     },
+//     "close": func(req *f.Request, res *f.Response, next func()) {
+//         res.WriteBytes([]byte("Close string"))
+//     },
+// }
+// data := c.Execute(req, res, next)
 type Map map[string]func(*f.Request, *f.Response, func())
 
-/*
-   The worker.
-*/
+// Execute all functions in the given map.
 func (this Map) Execute(req *f.Request, res *f.Response, next func()) map[string]string {
 
 	renders := map[string]string{}
