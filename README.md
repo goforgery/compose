@@ -10,6 +10,8 @@ Page composer for [Forgery2](https://github.com/goforgery/forgery2).
 
 ## Use
 
+Compose takes a map of Forgery2 handler functions indexed by a string. The map is then executed returning a new map where each functions return string is set as the value for the aforementioned index.
+
 ```javascript
 package main
 
