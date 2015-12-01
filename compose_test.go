@@ -24,8 +24,11 @@ func TestCompose(t *testing.T) {
 
 		It("should return a map with all the functions executed", func() {
 
+			res.Locals["title"] = "Foo"
+
 			c := Map{
 				"header": func(req *f.Request, res *f.Response, next func()) {
+					res.Set("foo", "Header Bar")
 					res.Send("Header")
 				},
 				"empty": func(req *f.Request, res *f.Response, next func()) {
@@ -33,7 +36,6 @@ func TestCompose(t *testing.T) {
 					res.End("")
 				},
 				"body": func(req *f.Request, res *f.Response, next func()) {
-					res.Locals["title"] = "Foo"
 					res.End("Body")
 				},
 				"footer": func(req *f.Request, res *f.Response, next func()) {
@@ -50,6 +52,7 @@ func TestCompose(t *testing.T) {
 
 			data := c.Execute(req, res, next)
 
+			AssertEqual(res.Get("foo"), "Header Bar")
 			AssertEqual(string(data["header"]), "Header")
 			AssertEqual(string(data["empty"]), "")
 			AssertEqual(string(data["body"]), "Body")
@@ -57,7 +60,7 @@ func TestCompose(t *testing.T) {
 			AssertEqual(string(data["footer"]), "Footer")
 			AssertEqual(string(data["tail"]), "Tail")
 			AssertEqual(string(data["close"]), "Close")
-			AssertEqual(res.Locals["append"], "Bar")
+			AssertEqual(res.Locals["append"], "")
 		})
 	})
 
