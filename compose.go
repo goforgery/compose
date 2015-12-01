@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-// The Writer used in place of stackr.Writer for buffering.
+// The Writer used in place of res.Writer for buffering.
 type BufferedResponseWriter struct {
 	Id      string
 	Headers http.Header
@@ -58,40 +58,33 @@ type Map map[string]func(*f.Request, *f.Response, func())
 
 // Execute all functions in the given map.
 func (this Map) Execute(req *f.Request, res *f.Response, next func()) map[string]string {
-	// Grab the res.Writer so we can put it back later.
-	w := res.Writer
-	// Make chan.
-	c := make(chan *BufferedResponseWriter)
-	// Loop over the items in the map and dispatch each one.
-	for id, fn := range this {
-		go this.dispatch(req, res.Clone(), next, id, fn, c)
-	}
-	// Put the res.Writer back.
-	res.Writer = w
 	// Create the return map.
 	renders := map[string]string{}
-	for i := 0; i < len(this); i++ {
-		buf := <-c
+	// Grab the res.Writer so we can put it back later.
+	w := res.Writer
+	// Loop over the items in the map and dispatch each one.
+	for id, fn := range this {
+		// Clone the res object so we can replace the buffer.
+		r := res.Clone()
+		// Create a buffer.
+		buf := &BufferedResponseWriter{Id: id}
+		// Replace res.Writer with BufferedResponseWriter so all the output can be captured.
+		r.Writer = buf
+		// Call the function.
+		fn(req, r, next)
+		// If there was some data returned add it to the renders map.
+		if buf.Buffer != nil {
+			renders[id] = buf.Buffer.String()
+		}
+		// Copy over the headers.
 		for k, v := range buf.Headers {
 			if k != "Content-Length" {
 				res.Set(k, v[0])
 			}
 		}
-		if buf.Buffer != nil {
-			renders[buf.Id] = buf.Buffer.String()
-		}
 	}
+	// Put the res.Writer back.
+	res.Writer = w
+	// Return the final map.
 	return renders
-}
-
-// Dispatch the call to handle the given function.
-func (this Map) dispatch(req *f.Request, res *f.Response, next func(), id string, fn func(*f.Request, *f.Response, func()), c chan *BufferedResponseWriter) {
-	// Create a buffer.
-	buffer := &BufferedResponseWriter{Id: id}
-	// Replace res.Writer with BufferedResponseWriter so all the output can be captured.
-	res.Writer = buffer
-	// Call the function.
-	fn(req, res, next)
-	// Return the buffer.
-	c <- buffer
 }
