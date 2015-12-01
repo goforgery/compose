@@ -73,7 +73,9 @@ func (this Map) Execute(req *f.Request, res *f.Response, next func()) map[string
 	for i := 0; i < len(this); i++ {
 		buf := <-c
 		for k, v := range buf.Headers {
-			res.Set(k, v[0])
+			if k != "Content-Length" {
+				res.Set(k, v[0])
+			}
 		}
 		if buf.Buffer != nil {
 			renders[buf.Id] = buf.Buffer.String()
