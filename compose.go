@@ -8,7 +8,6 @@ import (
 
 // The Writer used in place of res.Writer for buffering.
 type BufferedResponseWriter struct {
-	Id      string
 	Headers http.Header
 	Buffer  *bytes.Buffer
 	Status  int
@@ -67,7 +66,7 @@ func (this Map) Execute(req *f.Request, res *f.Response, next func()) map[string
 		// Clone the res object so we can replace the buffer.
 		r := res.Clone()
 		// Create a buffer.
-		buf := &BufferedResponseWriter{Id: id}
+		buf := &BufferedResponseWriter{}
 		// Replace res.Writer with BufferedResponseWriter so all the output can be captured.
 		r.Writer = buf
 		// Call the function.
